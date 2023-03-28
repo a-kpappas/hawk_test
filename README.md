@@ -1,16 +1,29 @@
-# hawk_test
+# Hawk end to end tests.
 
 This Docker image runs a set of Selenium tests for testing [Hawk](https://github.com/ClusterLabs/hawk/)
 
-[![Build Status](https://travis-ci.com/ricardobranco777/hawk_test.svg?branch=master)](https://travis-ci.org/ricardobranco777/hawk_test)
+The following tests are executed by openQA during ci regularly.
 
-## Usage
+As developer you can execute them manually when you do an update on hawk.
 
-```
-usage: hawk_test.py [-h] [-b {firefox,chrome,chromium}] [-H HOST] [-S SLAVE]
-                    [-I VIRTUAL_IP] [-P PORT]
-                    [-s SECRET] [-r RESULTS] [--xvfb]
-```
+# Pre-requisites:
+
+* docker
+* 2 Hawk vms running 
+ (normally it is a cluster)
+See https://github.com/SUSE/pacemaker-deploy  for deploying hawk
+
+
+# Quickstart:
+
+1) Create the docker image
+`docker build . -t hawk_test `
+
+2) Run the tests with:
+``` docker run --ipc=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY hawk_test -H 10.162.32.175 -S 10.162.29.122 -s linux --xvfb ```
+
+Notes:
+  - You may want to add `--net=host` if you have problems with DNS resolution.
 
 ## Dependencies
 
@@ -26,26 +39,6 @@ usage: hawk_test.py [-h] [-b {firefox,chrome,chromium}] [-H HOST] [-S SLAVE]
   - paramiko
   - selenium
   - PyVirtualDisplay
-
-## Usage with Docker
-
-Build image with:
-
-`docker build -t hawk_test -f Dockerfile.alpine`
-
-Run:
-
-```docker run --rm --ipc=host hawk_test --xvfb [OPTIONS]```
-
-If you don't want to use the Xvfb headless mode:
-
-```
-xhost +
-docker run --rm --ipc=host -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix hawk_test [OPTIONS]
-```
-
-Notes:
-  - You may want to add `--net=host` if you have problems with DNS resolution.
 
 ## Options
 

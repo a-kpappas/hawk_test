@@ -2,7 +2,7 @@
 #!BuildTag: hawk_test
 # Use the repositories defined in OBS for installing packages
 #!UseOBSRepositories
-FROM	opensuse/leap:15.4
+FROM	registry.opensuse.org/opensuse/leap:15.4
 
 RUN	zypper -n install -y --no-recommends \
 		MozillaFirefox \
@@ -18,8 +18,13 @@ RUN	zypper -n install -y --no-recommends \
 		xorg-x11-Xvnc && \
 	zypper -n clean -a
 
-COPY	geckodriver /usr/local/bin/
-COPY	chromedriver /usr/local/bin/
+RUN	zypper -n install -y --no-recommends \
+		gzip \
+		tar \
+		wget && \
+	zypper -n clean -a && \
+	wget -O- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar zxf - -C /usr/local/bin/
+
 RUN	chmod +x /usr/local/bin/*
 
 RUN	useradd -l -m -d /test test
