@@ -19,7 +19,7 @@ RUN	zypper -n install -y --no-recommends \
 
 
 COPY	geckodriver /usr/local/bin/
-RUN	chmod +x /usr/local/bin/*
+RUN	chmod +x /usr/local/bin/geckodriver
 
 RUN	useradd -l -m -d /test test
 
