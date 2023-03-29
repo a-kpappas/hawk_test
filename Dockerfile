@@ -7,7 +7,6 @@ FROM	opensuse/leap:15.4
 RUN	zypper -n install -y --no-recommends \
 		MozillaFirefox \
 		MozillaFirefox-branding-upstream \
-		chromium \
 		file \
 		python3-paramiko \
 		python3-PyVirtualDisplay \
@@ -20,7 +19,6 @@ RUN	zypper -n install -y --no-recommends \
 
 
 COPY	geckodriver /usr/local/bin/
-COPY	chromedriver /usr/local/bin/
 RUN	chmod +x /usr/local/bin/*
 
 RUN	useradd -l -m -d /test test
