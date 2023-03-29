@@ -18,13 +18,9 @@ RUN	zypper -n install -y --no-recommends \
 		xorg-x11-Xvnc && \
 	zypper -n clean -a
 
-RUN	zypper -n install -y --no-recommends \
-		gzip \
-		tar \
-		wget && \
-	zypper -n clean -a && \
-	wget -O- https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux64.tar.gz | tar zxf - -C /usr/local/bin/
 
+COPY	geckodriver /usr/local/bin/
+COPY	chromedriver /usr/local/bin/
 RUN	chmod +x /usr/local/bin/*
 
 RUN	useradd -l -m -d /test test
