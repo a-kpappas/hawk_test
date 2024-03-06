@@ -13,25 +13,17 @@ class HawkTestSSH:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         self.ssh.connect(hostname=hostname.lower(), username="root", password=secret)
 
-    def check_cluster_conf_ssh(self, command, mustmatch):
+    def check_cluster_conf_ssh(self, command):
+        '''
+        run command remotely. Return bool and command output
+        '''
         _, out, err = self.ssh.exec_command(command)
         out, err = map(lambda f: f.read().decode().rstrip('\n'), (out, err))
         print(f"INFO: ssh command [{command}] got output [{out}] and error [{err}]")
         if err:
             print(f"ERROR: got an error over SSH: [{err}]")
-            return False
-        if isinstance(mustmatch, str):
-            if mustmatch:
-                if mustmatch in out:
-                    return True
-                return False
-            return out == mustmatch
-        if isinstance(mustmatch, list):
-            for exp in mustmatch:
-                if exp not in out:
-                    return False
-            return True
-        raise ValueError("check_cluster_conf_ssh: mustmatch must be str or list")
+            return False, ''
+        return True, out
 
     @staticmethod
     def set_test_status(results, test, status):
@@ -39,7 +31,8 @@ class HawkTestSSH:
 
     def verify_stonith_in_maintenance(self, results):
         print("TEST: verify_stonith_in_maintenance")
-        if self.check_cluster_conf_ssh("crm status | grep stonith-sbd", ["unmanaged", "maintenance"]):
+        ret, out = self.check_cluster_conf_ssh("crm status | grep stonith-sbd")
+        if ret and any(_ in out for _ in ["unmanaged", "maintenance"]):
             print("INFO: stonith-sbd is unmanaged")
             self.set_test_status(results, 'verify_stonith_in_maintenance', 'passed')
             return True
@@ -49,7 +42,8 @@ class HawkTestSSH:
 
     def verify_node_maintenance(self, results):
         print("TEST: verify_node_maintenance: check cluster node is in maintenance mode")
-        if self.check_cluster_conf_ssh("crm status | grep -i node", "maintenance"):
+        ret, out = self.check_cluster_conf_ssh("crm status | grep -i node")
+        if ret and "maintenance" in out:
             print("INFO: cluster node set successfully in maintenance mode")
             self.set_test_status(results, 'verify_node_maintenance', 'passed')
             return True
@@ -65,7 +59,8 @@ class HawkTestSSH:
             matches.append("op stop timeout=15s")
         else:
             matches.append("op stop timeout=15s on-fail=stop")
-        if self.check_cluster_conf_ssh("crm configure show", matches):
+        ret, out = self.check_cluster_conf_ssh("crm configure show")
+        if ret and all(_ in out for _ in matches):
             print(f"INFO: primitive [{primitive}] correctly defined in the cluster configuration")
             self.set_test_status(results, 'verify_primitive', 'passed')
             return True
@@ -75,7 +70,8 @@ class HawkTestSSH:
 
     def verify_primitive_removed(self, primitive, results):
         print(f"TEST: verify_primitive_removed: check primitive [{primitive}] is removed")
-        if self.check_cluster_conf_ssh("crm resource status | grep ocf::heartbeat:anything", ''):
+        ret, out = self.check_cluster_conf_ssh("crm resource status | grep ocf::heartbeat:anything")
+        if ret and out == '':
             print("INFO: primitive successfully removed")
             self.set_test_status(results, 'verify_primitive_removed', 'passed')
             return True
